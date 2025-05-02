@@ -1,12 +1,24 @@
 # Sona Web Server
 
-A simple Go web server that responds with "Hello, World!".
+A Go web server with ConnectRPC support.
 
 ## Requirements
 
-- Go 1.22 or later
+- Go 1.23 or later
 - Docker (optional)
 - Make (optional)
+
+## Setup
+
+1. Install dependencies:
+```bash
+make deps
+```
+
+2. Generate protobuf files:
+```bash
+make proto
+```
 
 ## Running the Server
 
@@ -17,12 +29,10 @@ A simple Go web server that responds with "Hello, World!".
 go run main.go
 ```
 
-2. Open your browser and visit:
+2. The server will be available at:
 ```
 http://localhost:8080
 ```
-
-You should see "Hello, World!" displayed in your browser.
 
 ### Using Docker
 
@@ -60,9 +70,39 @@ make clean
 make help
 ```
 
-3. Open your browser and visit:
-```
-http://localhost:8080
+## API Documentation
+
+The server exposes a ConnectRPC endpoint at `/sona.v1.HelloService/`.
+
+### Hello Service
+
+- **Endpoint**: `/sona.v1.HelloService/Hello`
+- **Method**: POST
+- **Request Body**:
+  ```json
+  {
+    "name": "string"
+  }
+  ```
+- **Response Body**:
+  ```json
+  {
+    "message": "string"
+  }
+  ```
+
+## Example Usage
+
+You can test the API using curl:
+
+```bash
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"name": "World"}' \
+  http://localhost:8080/sona.v1.HelloService/Hello
 ```
 
-You should see "Hello, World!" displayed in your browser. 
+Expected response:
+```json
+{"message": "Hello, World!"}
+``` 
