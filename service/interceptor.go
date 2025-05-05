@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 )
@@ -28,6 +29,7 @@ func NewPathRewriteInterceptor(rules []PathRewriteRule, next http.Handler) *Path
 // ServeHTTP implements http.Handler interface
 func (i *PathRewriteInterceptor) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Check each rule to see if it matches the current path
+	fmt.Printf("--- fml %v", r.URL.Path)
 	for _, rule := range i.rules {
 		if strings.HasPrefix(r.URL.Path, rule.From) {
 			// Rewrite the path according to the rule

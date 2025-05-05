@@ -4,7 +4,7 @@ go 1.23
 
 require (
 	connectrpc.com/connect v1.16.0
-	github.com/rs/cors v1.10.1
+	github.com/julienschmidt/httprouter v1.3.0
 	google.golang.org/protobuf v1.33.0
 )
 
