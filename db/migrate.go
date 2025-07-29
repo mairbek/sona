@@ -45,7 +45,7 @@ func RunMigrationsFromProjectRoot(connString string) error {
 
 	// Verify the migrations directory exists
 	if _, err := os.Stat(migrationsPath); os.IsNotExist(err) {
-		return fmt.Errorf("migrations directory does not exist: %s", migrationsPath)
+		return fmt.Errorf("migrations directory does not exist: %s (cwd: %s)", migrationsPath, cwd)
 	}
 
 	return RunMigrations(connString, migrationsPath)
