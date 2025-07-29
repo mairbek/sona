@@ -4,34 +4,23 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-
-	"sona/db/gen"
+	dbgen "sona/db/gen"
 )
 
 // Service provides database operations using sqlc-generated code
 type Service struct {
-	*gen.Queries
-	pool *pgxpool.Pool
+	*dbgen.Queries
 }
 
 // NewService creates a new database service
-func NewService(pool *pgxpool.Pool) *Service {
+func NewService(queries *dbgen.Queries) *Service {
 	return &Service{
-		Queries: gen.New(pool),
-		pool:    pool,
-	}
-}
-
-// Close closes the database connection pool
-func (s *Service) Close() {
-	if s.pool != nil {
-		s.pool.Close()
+		Queries: queries,
 	}
 }
 
 // CreateUser creates a new user
-func (s *Service) CreateUser(ctx context.Context, name string) (*gen.User, error) {
+func (s *Service) CreateUser(ctx context.Context, name string) (*dbgen.User, error) {
 	user, err := s.Queries.CreateUser(ctx, name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create user: %w", err)
@@ -40,7 +29,7 @@ func (s *Service) CreateUser(ctx context.Context, name string) (*gen.User, error
 }
 
 // GetUser retrieves a user by ID
-func (s *Service) GetUser(ctx context.Context, id int32) (*gen.User, error) {
+func (s *Service) GetUser(ctx context.Context, id int32) (*dbgen.User, error) {
 	user, err := s.Queries.GetUser(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user: %w", err)
@@ -49,7 +38,7 @@ func (s *Service) GetUser(ctx context.Context, id int32) (*gen.User, error) {
 }
 
 // GetUserByName retrieves a user by name
-func (s *Service) GetUserByName(ctx context.Context, name string) (*gen.User, error) {
+func (s *Service) GetUserByName(ctx context.Context, name string) (*dbgen.User, error) {
 	user, err := s.Queries.GetUserByName(ctx, name)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user by name: %w", err)
@@ -58,14 +47,14 @@ func (s *Service) GetUserByName(ctx context.Context, name string) (*gen.User, er
 }
 
 // ListUsers retrieves all users
-func (s *Service) ListUsers(ctx context.Context) ([]*gen.User, error) {
+func (s *Service) ListUsers(ctx context.Context) ([]*dbgen.User, error) {
 	users, err := s.Queries.ListUsers(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list users: %w", err)
 	}
 
 	// Convert to slice of pointers
-	result := make([]*gen.User, len(users))
+	result := make([]*dbgen.User, len(users))
 	for i, user := range users {
 		result[i] = &user
 	}
@@ -73,8 +62,8 @@ func (s *Service) ListUsers(ctx context.Context) ([]*gen.User, error) {
 }
 
 // UpdateUser updates a user's name
-func (s *Service) UpdateUser(ctx context.Context, id int32, name string) (*gen.User, error) {
-	user, err := s.Queries.UpdateUser(ctx, gen.UpdateUserParams{
+func (s *Service) UpdateUser(ctx context.Context, id int32, name string) (*dbgen.User, error) {
+	user, err := s.Queries.UpdateUser(ctx, dbgen.UpdateUserParams{
 		ID:   id,
 		Name: name,
 	})

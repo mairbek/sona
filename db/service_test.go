@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 	"time"
+
+	dbgen "sona/db/gen"
 )
 
 func TestServiceWithMigrations(t *testing.T) {
@@ -30,9 +32,10 @@ func TestServiceWithMigrations(t *testing.T) {
 		t.Fatalf("Failed to run migrations: %v", err)
 	}
 
+	queries := dbgen.New(pool)
+
 	// Create service
-	service := NewService(pool)
-	defer service.Close()
+	service := NewService(queries)
 
 	// Test creating a user
 	user, err := service.CreateUser(ctx, "testuser")
