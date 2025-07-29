@@ -1,12 +1,12 @@
 # Sona Web Server
 
-A Go web server with ConnectRPC support.
+Go+connectrpc+pgx+sqlc+testcontainers+pgtestdb
 
 ## Requirements
 
 - Go 1.23 or later
-- Docker (optional)
 - Make (optional)
+- Nix (optional)
 
 ## Setup
 
@@ -34,35 +34,21 @@ go run main.go
 http://localhost:8080
 ```
 
-### Using Docker
-
-#### Using Docker commands directly
-
-1. Build the Docker image:
-```bash
-docker build -t sona .
-```
-
-2. Run the container:
-```bash
-docker run -p 8080:8080 sona
-```
-
 #### Using Make commands
 
-1. Build the Docker image:
+1. Build the binary
 ```bash
 make build
 ```
 
-2. Run the container:
+2. Run the server:
 ```bash
 make run
 ```
 
-3. Clean up (optional):
+3. Run tests
 ```bash
-make clean
+make test
 ```
 
 4. View available commands:
@@ -98,11 +84,11 @@ You can test the API using curl:
 ```bash
 curl -X POST \
   -H "Content-Type: application/json" \
-  -d '{"name": "World"}' \
+  -d '{"name": "Pepe"}' \
   http://localhost:8080/sona.v1.HelloService/Hello
 ```
 
 Expected response:
 ```json
-{"message": "Hello, World!"}
+{"message": "Hello, Pepe!"}
 ``` 

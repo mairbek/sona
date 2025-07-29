@@ -1,4 +1,4 @@
-.PHONY: build run clean proto deps
+.PHONY: build run proto deps
 
 # Variables
 IMAGE_NAME = sona
@@ -30,3 +30,6 @@ build: proto
 
 run:
 	go run main.go
+
+test:
+	go test -v -parallel=4 -timeout 30s ./...
