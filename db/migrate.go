@@ -40,12 +40,25 @@ func RunMigrationsFromProjectRoot(connString string) error {
 		return fmt.Errorf("failed to get current working directory: %w", err)
 	}
 
-	// Construct the migrations path - use absolute path
-	migrationsPath := filepath.Join(cwd, "migrations")
+	// Find the project root by looking for go.mod
+	projectRoot := cwd
+	for {
+		if _, err := os.Stat(filepath.Join(projectRoot, "go.mod")); err == nil {
+			break
+		}
+		parent := filepath.Dir(projectRoot)
+		if parent == projectRoot {
+			return fmt.Errorf("could not find project root (go.mod not found)")
+		}
+		projectRoot = parent
+	}
+
+	// Construct the migrations path relative to project root
+	migrationsPath := filepath.Join(projectRoot, "db", "migrations")
 
 	// Verify the migrations directory exists
 	if _, err := os.Stat(migrationsPath); os.IsNotExist(err) {
-		return fmt.Errorf("migrations directory does not exist: %s (cwd: %s)", migrationsPath, cwd)
+		return fmt.Errorf("migrations directory does not exist: %s (project root: %s)", migrationsPath, projectRoot)
 	}
 
 	return RunMigrations(connString, migrationsPath)
