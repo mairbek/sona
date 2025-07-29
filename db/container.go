@@ -29,6 +29,14 @@ func NewPostgresContainer(ctx context.Context) (*PostgresContainer, error) {
 		postgres.WithDatabase("testdb"),
 		postgres.WithUsername("testuser"),
 		postgres.WithPassword("testpass"),
+		testcontainers.WithTmpfs(map[string]string{
+			"/var/lib/postgresql/data": "rw,nosuid,nodev,noexec,relatime,size=1g",
+		}),
+		testcontainers.WithCmdArgs(
+			"-c", "fsync=off",
+			"-c", "synchronous_commit=off",
+			"-c", "full_page_writes=off",
+		),
 		testcontainers.WithWaitStrategy(
 			wait.ForLog("database system is ready to accept connections").
 				WithOccurrence(2).
