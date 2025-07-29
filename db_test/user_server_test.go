@@ -2,11 +2,12 @@ package db_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
-	dbgen "sona/db/gen"
 	"sona/db"
+	dbgen "sona/db/gen"
 	"sona/dbstub"
 	proto "sona/gen"
 
@@ -14,12 +15,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var testUser string = "Pepe Frog"
+
 func TestCreateUser(t *testing.T) {
+	t.Parallel()
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	// Get test pool from global container
-	pool, err := dbstub.GetTestPool(ctx)
+	pool, err := dbstub.TestDBPool(ctx, t)
 	assert.NoError(t, err, "Failed to get test pool")
 	defer pool.Close()
 
@@ -29,21 +33,22 @@ func TestCreateUser(t *testing.T) {
 
 	// Test creating a user
 	resp, err := service.CreateUser(ctx, connect.NewRequest(&proto.CreateUserRequest{
-		Name: "testuser",
+		Name: testUser,
 	}))
 	assert.NoError(t, err, "Failed to create user")
 
 	user := resp.Msg
 	assert.NotZero(t, user.Id, "Expected user ID to be non-zero")
-	assert.Equal(t, "testuser", user.Name, "Expected user name to be 'testuser'")
+	assert.Equal(t, testUser, user.Name, fmt.Sprintf("Expected user name to be '%s'", testUser))
 }
 
 func TestGetUser(t *testing.T) {
+	t.Parallel()
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	// Get test pool from global container
-	pool, err := dbstub.GetTestPool(ctx)
+	pool, err := dbstub.TestDBPool(ctx, t)
 	assert.NoError(t, err, "Failed to get test pool")
 	defer pool.Close()
 
@@ -53,7 +58,7 @@ func TestGetUser(t *testing.T) {
 
 	// First create a user
 	createResp, err := service.CreateUser(ctx, connect.NewRequest(&proto.CreateUserRequest{
-		Name: "getusertest",
+		Name: testUser,
 	}))
 	assert.NoError(t, err, "Failed to create user for get test")
 	createdUser := createResp.Msg
@@ -70,11 +75,12 @@ func TestGetUser(t *testing.T) {
 }
 
 func TestListUsers(t *testing.T) {
+	t.Parallel()
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	// Get test pool from global container
-	pool, err := dbstub.GetTestPool(ctx)
+	pool, err := dbstub.TestDBPool(ctx, t)
 	assert.NoError(t, err, "Failed to get test pool")
 	defer pool.Close()
 
@@ -84,7 +90,7 @@ func TestListUsers(t *testing.T) {
 
 	// Create a user first
 	_, err = service.CreateUser(ctx, connect.NewRequest(&proto.CreateUserRequest{
-		Name: "listusertest",
+		Name: testUser,
 	}))
 	assert.NoError(t, err, "Failed to create user for list test")
 
@@ -94,4 +100,4 @@ func TestListUsers(t *testing.T) {
 
 	users := listUsersResp.Msg.Users
 	assert.GreaterOrEqual(t, len(users), 1, "Should have at least 1 user")
-} 
+}
