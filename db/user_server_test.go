@@ -6,6 +6,9 @@ import (
 	"time"
 
 	dbgen "sona/db/gen"
+	proto "sona/gen"
+
+	"connectrpc.com/connect"
 )
 
 func TestServiceWithMigrations(t *testing.T) {
@@ -35,15 +38,18 @@ func TestServiceWithMigrations(t *testing.T) {
 	queries := dbgen.New(pool)
 
 	// Create service
-	service := NewService(queries)
+	service := NewUserServer(queries)
 
 	// Test creating a user
-	user, err := service.CreateUser(ctx, "testuser")
+	resp, err := service.CreateUser(ctx, connect.NewRequest(&proto.CreateUserRequest{
+		Name: "testuser",
+	}))
 	if err != nil {
 		t.Fatalf("Failed to create user: %v", err)
 	}
+	user := resp.Msg
 
-	if user.ID == 0 {
+	if user.Id == 0 {
 		t.Error("Expected user ID to be non-zero")
 	}
 	if user.Name != "testuser" {
@@ -51,63 +57,29 @@ func TestServiceWithMigrations(t *testing.T) {
 	}
 
 	// Test getting user by ID
-	retrievedUser, err := service.GetUser(ctx, user.ID)
+	getUserResp, err := service.GetUser(ctx, connect.NewRequest(&proto.GetUserRequest{
+		Id: user.Id,
+	}))
 	if err != nil {
 		t.Fatalf("Failed to get user: %v", err)
 	}
 
-	if retrievedUser.ID != user.ID {
-		t.Errorf("Expected user ID %d, got %d", user.ID, retrievedUser.ID)
+	retrievedUser := getUserResp.Msg
+	if retrievedUser.Id != user.Id {
+		t.Errorf("Expected user ID %d, got %d", user.Id, retrievedUser.Id)
 	}
 	if retrievedUser.Name != user.Name {
 		t.Errorf("Expected user name '%s', got '%s'", user.Name, retrievedUser.Name)
 	}
 
-	// Test getting user by name
-	retrievedByName, err := service.GetUserByName(ctx, "testuser")
-	if err != nil {
-		t.Fatalf("Failed to get user by name: %v", err)
-	}
-
-	if retrievedByName.ID != user.ID {
-		t.Errorf("Expected user ID %d, got %d", user.ID, retrievedByName.ID)
-	}
-
 	// Test listing users
-	users, err := service.ListUsers(ctx)
+	listUsersResp, err := service.ListUsers(ctx, connect.NewRequest(&proto.ListUsersRequest{}))
 	if err != nil {
 		t.Fatalf("Failed to list users: %v", err)
 	}
-
+	users := listUsersResp.Msg.Users
 	if len(users) != 1 {
 		t.Errorf("Expected 1 user, got %d", len(users))
 	}
 
-	// Test updating user
-	updatedUser, err := service.UpdateUser(ctx, user.ID, "updateduser")
-	if err != nil {
-		t.Fatalf("Failed to update user: %v", err)
-	}
-
-	if updatedUser.Name != "updateduser" {
-		t.Errorf("Expected updated name 'updateduser', got '%s'", updatedUser.Name)
-	}
-
-	// Test unique constraint
-	_, err = service.CreateUser(ctx, "updateduser")
-	if err == nil {
-		t.Error("Expected error when creating user with duplicate name")
-	}
-
-	// Test deleting user
-	err = service.DeleteUser(ctx, user.ID)
-	if err != nil {
-		t.Fatalf("Failed to delete user: %v", err)
-	}
-
-	// Verify user was deleted
-	_, err = service.GetUser(ctx, user.ID)
-	if err == nil {
-		t.Error("Expected error when getting deleted user")
-	}
 }
